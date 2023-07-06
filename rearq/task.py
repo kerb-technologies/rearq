@@ -1,6 +1,6 @@
 import datetime
 import json
-from typing import Any, Callable, Dict, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Tuple, Union, List
 from uuid import uuid4
 
 from crontab import CronTab
@@ -24,7 +24,7 @@ class Task:
         queue: str,
         rearq,
         job_retry: int,
-        job_retry_after: int,
+        job_retry_after: Union[int, List],
         job_timeout: int,
         expire: Optional[Union[float, datetime.datetime]] = None,
         run_with_lock: bool = False,
@@ -78,7 +78,7 @@ class Task:
         eta: Optional[datetime.datetime] = None,
         expire: Optional[Union[float, datetime.datetime]] = None,
         job_retry: int = 0,
-        job_retry_after: int = 60,
+        job_retry_after: Union[int, List] = 60,
         **kwarg: Any,
     ) -> Optional[Job]:
         """
@@ -202,7 +202,7 @@ class CronTask(Task):
         queue: str,
         rearq,
         job_retry: int,
-        job_retry_after: int,
+        job_retry_after: Union[int, List],
         job_timeout: int,
         cron: str,
         expire: Optional[Union[float, datetime.datetime]] = None,

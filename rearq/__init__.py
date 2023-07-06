@@ -36,7 +36,7 @@ class ReArq:
         sentinels: Optional[List[str]] = None,
         sentinel_master: str = "master",
         job_retry: int = 3,
-        job_retry_after: int = 60,
+        job_retry_after: Union[int, List] = 60,
         max_jobs: int = 10,
         job_timeout: int = 300,
         expire: Optional[Union[float, datetime.datetime]] = None,

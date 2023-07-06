@@ -224,13 +224,14 @@ class Worker:
                 logger.error("%6.2fs ! %s max retries %d exceeded" % (t, ref, job.job_retry))
                 job.status = JobStatus.failed
             else:
-                result = f"Run job error in NO.{job.job_retries} times, exc: {e}, retry after {self.job_retry_after} seconds"
+                job_retry_after = self.get_job_retry_after(job.job_retries)
+                result = f"Run job error in NO.{job.job_retries} times, exc: {e}, retry after {job_retry_after} seconds"
                 logger.error(
                     "%6.2fs ← %s ● %s" % ((timestamp_ms_now() - start_ms) / 1000, ref, result)
                 )
                 job.status = JobStatus.deferred
                 job.job_retries = F("job_retries") + 1
-                await self.rearq.zadd(to_ms_timestamp(self.job_retry_after), f"{queue}:{job_id}")
+                await self.rearq.zadd(to_ms_timestamp(job_retry_after), f"{queue}:{job_id}")
         finally:
             await self._xack(queue, msg_id)
             await job.save(update_fields=["status", "job_retries"])
@@ -240,6 +241,13 @@ class Worker:
         job_result.result = result
         await job_result.save()
         return job_result
+    
+    def get_job_retry_after(self, retry_times):
+        if type(self.job_retry_after) is List:
+            if retry_times < len(self.job_retry_after):
+                return self.job_retry_after[retry_times]
+            return self.job_retry_after[-1]
+        return self.job_retry_after
 
     @property
     def worker_name(self):
